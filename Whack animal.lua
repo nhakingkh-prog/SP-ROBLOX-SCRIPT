@@ -112,7 +112,7 @@ swingBtn.MouseButton1Click:Connect(function()
         swingBtn.Text = "Auto Swing: ON"
         spawn(function()
             while _G.AutoSwing do
-                task.wait(0.1)
+                task.wait(0.01) -- វាយលឿនបំផុត (0.01)
                 local tool = player.Character and player.Character:FindFirstChildOfClass("Tool")
                 if tool then tool:Activate() end
             end
@@ -204,11 +204,10 @@ autoFarmBtn.MouseButton1Click:Connect(function()
         autoFarmBtn.Text = "2. Auto Grab & TP Forest: ON"
         spawn(function()
             while _G.AutoGrabTP do
-                task.wait(0.2) -- ឲ្យវាលឿនជាងមុន ដើម្បីចាប់បានភ្លាមៗពេលធ្លាក់
+                task.wait(0.2) 
                 local char = player.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
                     for _, obj in pairs(workspace:GetDescendants()) do
-                        -- ប្ដូរលក្ខខណ្ឌ៖ ឲ្យតែវាជាប៊ូតុងចុច [E] គឺវាចុចទាំងអស់ មិនបាច់រើសពាក្យ Grab ទេ
                         if obj:IsA("ProximityPrompt") then
                             char.HumanoidRootPart.CFrame = obj.Parent.CFrame
                             task.wait(0.2)
