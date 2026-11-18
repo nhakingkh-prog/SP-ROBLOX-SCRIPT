@@ -288,7 +288,22 @@ targetHealth.Font = Enum.Font.SourceSans
 targetHealth.TextSize = 16
 targetHealth.Parent = infoPanel
 
--- មុខងារ Scan រកសត្វដែលនៅជិតជាងគេ (បានកែសម្រួលថ្មី)
+-- មុខងារបំប្លែងលេខទៅជា K, M, B, T
+local function formatNumber(n)
+    if n >= 1e12 then
+        return string.format("%.2fT", n / 1e12)
+    elseif n >= 1e9 then
+        return string.format("%.2fB", n / 1e9)
+    elseif n >= 1e6 then
+        return string.format("%.2fM", n / 1e6)
+    elseif n >= 1e3 then
+        return string.format("%.2fK", n / 1e3)
+    else
+        return tostring(math.floor(n))
+    end
+end
+
+-- មុខងារ Scan រកសត្វដែលនៅជិតជាងគេ 
 spawn(function()
     while task.wait(0.5) do
         if dashboard.Visible then
@@ -296,10 +311,9 @@ spawn(function()
             local char = player.Character
             if char and char:FindFirstChild("HumanoidRootPart") then
                 local closestObj = nil
-                local shortestDist = 60 -- បង្កើនចម្ងាយឲ្យឆ្ងាយជាងមុន
+                local shortestDist = 60 
 
                 for _, obj in pairs(workspace:GetDescendants()) do
-                    -- រកមើលគ្រប់ Model ទាំងអស់ដែលមាន Humanoid ក្រៅពីខ្លួនយើង
                     if obj:IsA("Model") and obj ~= char then
                         local hum = obj:FindFirstChildOfClass("Humanoid")
                         local root = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart
@@ -317,7 +331,8 @@ spawn(function()
                 if closestObj then
                     local hum = closestObj:FindFirstChildOfClass("Humanoid")
                     targetName.Text = "Target: " .. closestObj.Name
-                    targetHealth.Text = "Health: " .. tostring(math.floor(hum.Health)) .. " / " .. tostring(math.floor(hum.MaxHealth))
+                    -- ប្រើប្រាស់មុខងារបំប្លែងលេខនៅទីនេះ
+                    targetHealth.Text = "Health: " .. formatNumber(hum.Health) .. " / " .. formatNumber(hum.MaxHealth)
                 else
                     targetName.Text = "Target: None"
                     targetHealth.Text = "Health: 0"
