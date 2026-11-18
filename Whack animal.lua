@@ -63,6 +63,7 @@ _G.RunFast = false
 _G.AutoSwing = false
 _G.AntiChase = false
 _G.AutoGrabTP = false
+_G.AutoSnipeExclusive = false -- អថេរថ្មីសម្រាប់ Snipe Exclusive
 _G.ESPEggs = false
 local savedBaseCFrame = nil 
 
@@ -70,13 +71,13 @@ local savedBaseCFrame = nil
 -- [1. ប៊ូតុង រត់លឿន]
 -- ==========================================
 local runBtn = Instance.new("TextButton")
-runBtn.Size = UDim2.new(0, 360, 0, 35)
-runBtn.Position = UDim2.new(0, 20, 0, 55)
+runBtn.Size = UDim2.new(0, 360, 0, 30)
+runBtn.Position = UDim2.new(0, 20, 0, 50)
 runBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 runBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 runBtn.Text = "Run Fast: OFF"
 runBtn.Font = Enum.Font.SourceSansBold
-runBtn.TextSize = 18
+runBtn.TextSize = 16
 runBtn.Parent = dashboard
 
 runBtn.MouseButton1Click:Connect(function()
@@ -105,13 +106,13 @@ end)
 -- [2. ប៊ូតុង វាយស្វ័យប្រវត្តិ]
 -- ==========================================
 local swingBtn = Instance.new("TextButton")
-swingBtn.Size = UDim2.new(0, 360, 0, 35)
-swingBtn.Position = UDim2.new(0, 20, 0, 100)
+swingBtn.Size = UDim2.new(0, 360, 0, 30)
+swingBtn.Position = UDim2.new(0, 20, 0, 90)
 swingBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 swingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 swingBtn.Text = "Auto Swing: OFF"
 swingBtn.Font = Enum.Font.SourceSansBold
-swingBtn.TextSize = 18
+swingBtn.TextSize = 16
 swingBtn.Parent = dashboard
 
 swingBtn.MouseButton1Click:Connect(function()
@@ -136,13 +137,13 @@ end)
 -- [3. ប៊ូតុង កុំអោយសត្វដេញ]
 -- ==========================================
 local chaseBtn = Instance.new("TextButton")
-chaseBtn.Size = UDim2.new(0, 360, 0, 35)
-chaseBtn.Position = UDim2.new(0, 20, 0, 145)
+chaseBtn.Size = UDim2.new(0, 360, 0, 30)
+chaseBtn.Position = UDim2.new(0, 20, 0, 130)
 chaseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 chaseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 chaseBtn.Text = "Anti Chase: OFF"
 chaseBtn.Font = Enum.Font.SourceSansBold
-chaseBtn.TextSize = 18
+chaseBtn.TextSize = 16
 chaseBtn.Parent = dashboard
 
 chaseBtn.MouseButton1Click:Connect(function()
@@ -172,11 +173,11 @@ end)
 -- [4. ប៊ូតុង កំណត់ទីតាំង Forest Zone]
 -- ==========================================
 local setBaseBtn = Instance.new("TextButton")
-setBaseBtn.Size = UDim2.new(0, 360, 0, 35)
-setBaseBtn.Position = UDim2.new(0, 20, 0, 200)
+setBaseBtn.Size = UDim2.new(0, 360, 0, 30)
+setBaseBtn.Position = UDim2.new(0, 20, 0, 175)
 setBaseBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
 setBaseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-setBaseBtn.Text = "1. Set Forest Zone (Stand here & Click)"
+setBaseBtn.Text = "1. Set Base (Stand here & Click)"
 setBaseBtn.Font = Enum.Font.SourceSansBold
 setBaseBtn.TextSize = 16
 setBaseBtn.Parent = dashboard
@@ -184,10 +185,10 @@ setBaseBtn.Parent = dashboard
 setBaseBtn.MouseButton1Click:Connect(function()
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         savedBaseCFrame = player.Character.HumanoidRootPart.CFrame
-        setBaseBtn.Text = "Forest Zone Saved!"
+        setBaseBtn.Text = "Base Saved!"
         setBaseBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
         task.wait(1.5)
-        setBaseBtn.Text = "1. Update Forest Zone Location"
+        setBaseBtn.Text = "1. Update Base Location"
         setBaseBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
     end
 end)
@@ -196,27 +197,27 @@ end)
 -- [5. ប៊ូតុង Auto Grab & TP]
 -- ==========================================
 local autoFarmBtn = Instance.new("TextButton")
-autoFarmBtn.Size = UDim2.new(0, 360, 0, 40)
-autoFarmBtn.Position = UDim2.new(0, 20, 0, 245)
+autoFarmBtn.Size = UDim2.new(0, 360, 0, 30)
+autoFarmBtn.Position = UDim2.new(0, 20, 0, 215)
 autoFarmBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 autoFarmBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-autoFarmBtn.Text = "2. Auto Grab & TP Forest: OFF"
+autoFarmBtn.Text = "2. Auto Grab Prompt & TP: OFF"
 autoFarmBtn.Font = Enum.Font.SourceSansBold
-autoFarmBtn.TextSize = 18
+autoFarmBtn.TextSize = 16
 autoFarmBtn.Parent = dashboard
 
 autoFarmBtn.MouseButton1Click:Connect(function()
     if not savedBaseCFrame then
-        autoFarmBtn.Text = "Please Set Forest Zone First!"
+        autoFarmBtn.Text = "Please Set Base First!"
         task.wait(1.5)
-        autoFarmBtn.Text = "2. Auto Grab & TP Forest: OFF"
+        autoFarmBtn.Text = "2. Auto Grab Prompt & TP: OFF"
         return
     end
 
     _G.AutoGrabTP = not _G.AutoGrabTP
     if _G.AutoGrabTP then
         autoFarmBtn.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
-        autoFarmBtn.Text = "2. Auto Grab & TP Forest: ON"
+        autoFarmBtn.Text = "2. Auto Grab Prompt & TP: ON"
         spawn(function()
             while _G.AutoGrabTP do
                 task.wait(0.1) 
@@ -240,27 +241,137 @@ autoFarmBtn.MouseButton1Click:Connect(function()
         end)
     else
         autoFarmBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-        autoFarmBtn.Text = "2. Auto Grab & TP Forest: OFF"
+        autoFarmBtn.Text = "2. Auto Grab Prompt & TP: OFF"
     end
 end)
 
 -- ==========================================
--- [6. ប៊ូតុងថ្មី: ESP Eggs (បង្ហាញតម្លៃពងទា និងសត្វចិញ្ចឹម)]
+-- [6. ប៊ូតុងថ្មី: Auto Snipe Exclusive Egg]
+-- ==========================================
+local snipeBtn = Instance.new("TextButton")
+snipeBtn.Size = UDim2.new(0, 360, 0, 35)
+snipeBtn.Position = UDim2.new(0, 20, 0, 255)
+snipeBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 255) -- ពណ៌ស្វាយ
+snipeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+snipeBtn.Text = "3. Auto Snipe Exclusive Egg: OFF"
+snipeBtn.Font = Enum.Font.SourceSansBold
+snipeBtn.TextSize = 16
+snipeBtn.Parent = dashboard
+
+snipeBtn.MouseButton1Click:Connect(function()
+    if not savedBaseCFrame then
+        snipeBtn.Text = "Please Set Base First!"
+        task.wait(1.5)
+        snipeBtn.Text = "3. Auto Snipe Exclusive Egg: OFF"
+        return
+    end
+
+    _G.AutoSnipeExclusive = not _G.AutoSnipeExclusive
+    if _G.AutoSnipeExclusive then
+        snipeBtn.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
+        snipeBtn.Text = "3. Auto Snipe Exclusive Egg: ON"
+        
+        spawn(function()
+            while _G.AutoSnipeExclusive do
+                task.wait(0.5)
+                local char = player.Character
+                if not char or not char:FindFirstChild("HumanoidRootPart") then continue end
+
+                local targetEgg = nil
+
+                -- ស្វែងរកពងទា Exclusive
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("Model") and obj ~= char and not game.Players:GetPlayerFromCharacter(obj) then
+                        local isExclusive = false
+                        -- រកមើលអក្សរ Exclusive នៅលើក្បាលវា
+                        for _, child in pairs(obj:GetDescendants()) do
+                            if child:IsA("TextLabel") and child.Text:lower():match("exclusive") then
+                                isExclusive = true
+                                break
+                            end
+                        end
+                        -- ឫស្វែងរកតាមឈ្មោះវាក៏បាន
+                        if not isExclusive and obj.Name:lower():match("exclusive") then
+                            isExclusive = true
+                        end
+
+                        if isExclusive then
+                            targetEgg = obj
+                            break
+                        end
+                    end
+                end
+
+                -- បើឃើញពង Exclusive ដំណើរការវាយ និងចាប់យក
+                if targetEgg and targetEgg.Parent then
+                    local root = targetEgg:FindFirstChild("HumanoidRootPart") or targetEgg.PrimaryPart or targetEgg:FindFirstChildOfClass("Part") or targetEgg:FindFirstChildOfClass("MeshPart")
+                    if root then
+                        local isFarming = true
+                        while isFarming and _G.AutoSnipeExclusive and targetEgg.Parent do
+                            -- Teleport ទៅចំពីលើវាជានិច្ច
+                            char.HumanoidRootPart.CFrame = root.CFrame * CFrame.new(0, 3, 0)
+                            
+                            -- Auto Swing (វាយ)
+                            local tool = char:FindFirstChildOfClass("Tool") or player.Backpack:FindFirstChildOfClass("Tool")
+                            if tool then
+                                tool.Parent = char
+                                tool:Activate()
+                            end
+                            
+                            -- ត្រៀមចាប់យកពេលបែក
+                            for _, prompt in pairs(workspace:GetDescendants()) do
+                                if prompt:IsA("ProximityPrompt") and prompt.Parent and prompt.Parent:IsA("BasePart") then
+                                    local dist = (prompt.Parent.Position - char.HumanoidRootPart.Position).Magnitude
+                                    if dist < 20 then
+                                        pcall(function() fireproximityprompt(prompt, 1) end)
+                                        isFarming = false
+                                        task.wait(0.2)
+                                        char.HumanoidRootPart.CFrame = savedBaseCFrame
+                                    end
+                                end
+                            end
+                            task.wait(0.05)
+                        end
+                        
+                        -- បើពងបាត់(បែក)ហើយ តែចាប់មិនទាន់ រង់ចាំតិចរួចចាប់យកម្ដងទៀត
+                        if isFarming then
+                            task.wait(0.2)
+                            for _, prompt in pairs(workspace:GetDescendants()) do
+                                if prompt:IsA("ProximityPrompt") and prompt.Parent and prompt.Parent:IsA("BasePart") then
+                                    local dist = (prompt.Parent.Position - char.HumanoidRootPart.Position).Magnitude
+                                    if dist < 30 then
+                                        pcall(function() fireproximityprompt(prompt, 1) end)
+                                    end
+                                end
+                            end
+                            char.HumanoidRootPart.CFrame = savedBaseCFrame
+                        end
+                    end
+                end
+            end
+        end)
+    else
+        snipeBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 255)
+        snipeBtn.Text = "3. Auto Snipe Exclusive Egg: OFF"
+    end
+end)
+
+-- ==========================================
+-- [7. ESP Eggs (បង្ហាញតម្លៃពងទា និងសត្វចិញ្ចឹម)]
 -- ==========================================
 local espBtn = Instance.new("TextButton")
 espBtn.Size = UDim2.new(0, 360, 0, 35)
-espBtn.Position = UDim2.new(0, 20, 0, 295)
+espBtn.Position = UDim2.new(0, 20, 0, 310)
 espBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 espBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 espBtn.Text = "ESP Eggs (Show Value): OFF"
 espBtn.Font = Enum.Font.SourceSansBold
-espBtn.TextSize = 18
+espBtn.TextSize = 16
 espBtn.Parent = dashboard
 
--- តារាងតម្លៃ និងពណ៌ទាំងអស់ (រួមទាំង Galactic និង Exclusive)
 local rarities = {
-    galactic = {name = "Galactic", color = Color3.fromRGB(0, 255, 255)}, -- ពណ៌ផ្ទៃមេឃ
-    exclusive = {name = "Exclusive", color = Color3.fromRGB(255, 215, 0)}, -- ពណ៌មាស
+    galactic = {name = "Galactic", color = Color3.fromRGB(0, 255, 255)}, 
+    exclusive = {name = "Exclusive", color = Color3.fromRGB(255, 215, 0)},
     mythic = {name = "Mythic", color = Color3.fromRGB(255, 50, 255)}, 
     legendary = {name = "Legendary", color = Color3.fromRGB(255, 100, 50)},
     epic = {name = "Epic", color = Color3.fromRGB(200, 50, 255)},
@@ -269,9 +380,7 @@ local rarities = {
     common = {name = "Common", color = Color3.fromRGB(200, 200, 200)}
 }
 
--- មុខងារស្វែងរកកម្រិត (Rarity) ដោយអានអក្សរផ្ទាល់ពីលើក្បាលសត្វ
 local function getEggValueInfo(obj)
-    -- ស្កេនមើលអក្សរ (TextLabel) នៅក្នុងខ្លួនសត្វ
     for _, child in pairs(obj:GetDescendants()) do
         if child:IsA("TextLabel") and child.Text ~= "" then
             local txt = child.Text:lower()
@@ -285,7 +394,6 @@ local function getEggValueInfo(obj)
         end
     end
     
-    -- ប្រសិនបើគ្មាន TextLabel ទេ ចាំរកក្នុងឈ្មោះរបស់វា (Fallback)
     local nameLower = obj.Name:lower()
     for key, data in pairs(rarities) do
         if nameLower:match(key) then
@@ -293,7 +401,6 @@ local function getEggValueInfo(obj)
         end
     end
     
-    -- បើមិនមានពាក្យអ្វីសោះ ដាក់ថា Unknown
     return "Unknown", Color3.fromRGB(200, 200, 200)
 end
 
@@ -306,7 +413,6 @@ local function createESP(obj)
     local petValue = "Unknown"
     local valueColor = Color3.fromRGB(200, 200, 200)
     
-    -- មុខងារស្វែងរកតម្លៃជា $/s
     local function findValue(parent, depth)
         if depth > 4 then return false end
         for _, child in pairs(parent:GetChildren()) do
@@ -333,7 +439,6 @@ local function createESP(obj)
         return false
     end
     
-    -- ប្រសិនបើរកតម្លៃ $/s មិនឃើញ ប្រើមុខងារស្វែងរក Rarity (Galactic, Mythic...)
     if not findValue(obj, 1) then
        petValue, valueColor = getEggValueInfo(obj)
     end
@@ -342,7 +447,7 @@ local function createESP(obj)
     bgui.Name = "EggESP"
     bgui.Adornee = root
     bgui.Size = UDim2.new(0, 100, 0, 40)
-    bgui.StudsOffset = Vector3.new(0, 3.5, 0) -- លើកឲ្យខ្ពស់បន្តិចកុំឲ្យជាន់អក្សរហ្គេម
+    bgui.StudsOffset = Vector3.new(0, 3.5, 0)
     bgui.AlwaysOnTop = true
 
     local text = Instance.new("TextLabel")
@@ -421,14 +526,12 @@ local function addAdminTitle(character)
     layout.Padding = UDim.new(0, 8) 
     layout.Parent = frame
 
-    -- រូបភាពសញ្ញាគ្រីស (Verified Tick)
     local icon = Instance.new("ImageLabel")
     icon.Size = UDim2.new(0, 28, 0, 28)
     icon.BackgroundTransparency = 1
     icon.Image = "rbxassetid://7300408655" 
     icon.Parent = frame
 
-    -- អក្សរឈ្មោះ
     local text = Instance.new("TextLabel")
     text.AutomaticSize = Enum.AutomaticSize.X 
     text.Size = UDim2.new(0, 0, 1, 0)
