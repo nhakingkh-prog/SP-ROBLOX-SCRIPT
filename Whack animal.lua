@@ -133,6 +133,29 @@ logoImage.Image = "rbxassetid://116345727167504"
 logoImage.Parent = header
 corner(logoImage, 8)
 
+-- ==========================================
+-- [Load Logo from GitHub]
+-- ==========================================
+local LOGO_URL = "https://raw.githubusercontent.com/USERNAME/REPO/main/LOGO_SP_ROBLOX_SCRIPT.png" -- ប្តូរ USERNAME និង REPO
+local LOGO_FILE = "SP_Logo.png"
+
+task.spawn(function()
+    local ok, asset = pcall(function()
+        local getAsset = getcustomasset or getsynasset
+        if not (writefile and isfile and getAsset) then
+            error("Executor does not support custom assets")
+        end
+        if not isfile(LOGO_FILE) then
+            writefile(LOGO_FILE, game:HttpGet(LOGO_URL))
+        end
+        return getAsset(LOGO_FILE)
+    end)
+    if ok and asset then
+        logoImage.Image = asset
+    end
+    -- បើបរាជ័យ នឹងប្រើ rbxassetid ខាងលើជំនួស
+end)
+
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -110, 1, 0)
 title.Position = UDim2.new(0, 54, 0, 0)
