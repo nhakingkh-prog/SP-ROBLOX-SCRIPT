@@ -303,7 +303,7 @@ local function formatNumber(n)
     end
 end
 
--- មុខងារ Scan រកសត្វដែលនៅជិតជាងគេ (មិនចាប់យកមនុស្ស)
+-- មុខងារ Scan រកសត្វដែលនៅជិតជាងគេ
 spawn(function()
     while task.wait(0.5) do
         if dashboard.Visible then
@@ -315,23 +315,32 @@ spawn(function()
 
                 for _, obj in pairs(workspace:GetDescendants()) do
                     if obj:IsA("Model") and obj ~= char and not game.Players:GetPlayerFromCharacter(obj) then
-                        local hum = obj:FindFirstChildOfClass("Humanoid")
-                        local root = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart
-                        
-                        if hum and root and hum.Health > 0 then
-                            local dist = (char.HumanoidRootPart.Position - root.Position).Magnitude
-                            if dist < shortestDist then
-                                shortestDist = dist
-                                closestObj = obj
+                        local hasHumanoid = obj:FindFirstChildOfClass("Humanoid")
+                        local isEggOrBoss = obj.Name:lower():match("egg") or obj.Name:lower():match("boss") or obj.Name:lower():match("dragon")
+
+                        if hasHumanoid or isEggOrBoss then
+                            local root = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildOfClass("Part") or obj:FindFirstChildOfClass("MeshPart")
+                            
+                            if root then
+                                local dist = (char.HumanoidRootPart.Position - root.Position).Magnitude
+                                if dist < shortestDist then
+                                    shortestDist = dist
+                                    closestObj = obj
+                                end
                             end
                         end
                     end
                 end
 
                 if closestObj then
-                    local hum = closestObj:FindFirstChildOfClass("Humanoid")
                     targetName.Text = "Target: " .. closestObj.Name
-                    targetHealth.Text = "Health: " .. formatNumber(hum.Health) .. " / " .. formatNumber(hum.MaxHealth)
+                    
+                    local hum = closestObj:FindFirstChildOfClass("Humanoid")
+                    if hum then
+                        targetHealth.Text = "Health: " .. formatNumber(hum.Health) .. " / " .. formatNumber(hum.MaxHealth)
+                    else
+                        targetHealth.Text = "Health: [Custom Egg]"
+                    end
                 else
                     targetName.Text = "Target: None"
                     targetHealth.Text = "Health: 0"
@@ -344,7 +353,7 @@ spawn(function()
 end)
 
 -- ==========================================
--- [បន្ថែមថ្មី: មុខងារបង្ហាញឈ្មោះ ADMIN លើក្បាល]
+-- [បន្ថែមថ្មី: មុខងារបង្ហាញឈ្មោះ ADMIN និងសញ្ញាគ្រីស លើក្បាល]
 -- ==========================================
 local function addAdminTitle(character)
     local head = character:WaitForChild("Head", 5)
@@ -358,19 +367,42 @@ local function addAdminTitle(character)
     local bgui = Instance.new("BillboardGui")
     bgui.Name = "AdminTitle"
     bgui.Adornee = head
-    bgui.Size = UDim2.new(0, 200, 0, 50)
+    bgui.Size = UDim2.new(0, 300, 0, 50) -- បង្កើនទំហំប្រអប់ដើម្បីដាក់រូប
     bgui.StudsOffset = Vector3.new(0, 2.5, 0)
     bgui.AlwaysOnTop = true
 
+    -- ប្រអប់សម្រាប់ផ្ទុកទាំងអក្សរ និងរូបភាព
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundTransparency = 1
+    frame.Parent = bgui
+    
+    -- UIListLayout ដើម្បីតម្រៀបរូបសញ្ញាគ្រីស និងអក្សរឲ្យនៅជួរតែមួយ (ពីឆ្វេងទៅស្តាំ)
+    local layout = Instance.new("UIListLayout")
+    layout.FillDirection = Enum.FillDirection.Horizontal
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    layout.VerticalAlignment = Enum.VerticalAlignment.Center
+    layout.Padding = UDim.new(0, 5) -- គម្លាតរវាងរូបនិងអក្សរ
+    layout.Parent = frame
+
+    -- រូបភាពសញ្ញាគ្រីស (Verified Tick)
+    local icon = Instance.new("ImageLabel")
+    icon.Size = UDim2.new(0, 25, 0, 25) -- ទំហំរូប 25x25
+    icon.BackgroundTransparency = 1
+    -- ប្រើ Decal ID របស់សញ្ញាគ្រីស Verified ពណ៌ខៀវក្នុង Roblox
+    icon.Image = "rbxassetid://10493035316" 
+    icon.Parent = frame
+
+    -- អក្សរឈ្មោះ
     local text = Instance.new("TextLabel")
-    text.Size = UDim2.new(1, 0, 1, 0)
+    text.Size = UDim2.new(0, 200, 1, 0)
     text.BackgroundTransparency = 1
     text.Text = "[ADMIN] " .. player.Name
     text.TextColor3 = Color3.fromRGB(255, 50, 50)
     text.TextStrokeTransparency = 0
     text.Font = Enum.Font.GothamBlack
     text.TextSize = 25
-    text.Parent = bgui
+    text.Parent = frame
 
     bgui.Parent = head
 end
