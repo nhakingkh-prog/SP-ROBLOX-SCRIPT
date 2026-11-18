@@ -668,6 +668,26 @@ makeToggle("ESP Eggs (Show Value)", "ESPEggs", function(on)
     end
 end)
 
+makeSection("Community")
+
+local TELEGRAM_LINK = "https://t.me/SPROBLOX"
+
+makeButton("✈  Join Telegram: @SPROBLOX", Color3.fromRGB(34, 158, 217), function(btn)
+    local copied = pcall(function()
+        (setclipboard or toclipboard)(TELEGRAM_LINK)
+    end)
+    if copied then
+        btn.Text = "✔ Link Copied!"
+        notify("Telegram link copied, paste it in your browser", Theme.On)
+    else
+        btn.Text = TELEGRAM_LINK
+        notify("Copy the link manually", Theme.SubText)
+    end
+    task.delay(2, function()
+        btn.Text = "✈  Join Telegram: @SPROBLOX"
+    end)
+end)
+
 -- ==========================================
 -- [Open / Close]
 -- ==========================================
