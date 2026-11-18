@@ -30,7 +30,7 @@ openButton.Parent = gui
 -- ==========================================
 local dashboard = Instance.new("Frame")
 dashboard.Name = "Dashboard"
-dashboard.Size = UDim2.new(0, 400, 0, 380) -- បង្កើនកម្ពស់ដើម្បីដាក់ប៊ូតុង ESP
+dashboard.Size = UDim2.new(0, 400, 0, 380) 
 dashboard.Position = UDim2.new(0.5, -200, 0.5, -190)
 dashboard.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 dashboard.BorderSizePixel = 0
@@ -63,7 +63,7 @@ _G.RunFast = false
 _G.AutoSwing = false
 _G.AntiChase = false
 _G.AutoGrabTP = false
-_G.ESPEggs = false -- អថេរសម្រាប់ ESP
+_G.ESPEggs = false
 local savedBaseCFrame = nil 
 
 -- ==========================================
@@ -245,7 +245,7 @@ autoFarmBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- [6. ប៊ូតុងថ្មី: ESP Eggs (បង្ហាញតម្លៃពងទា)]
+-- [6. ប៊ូតុងថ្មី: ESP Eggs (បង្ហាញតម្លៃពងទា និងសត្វចិញ្ចឹម)]
 -- ==========================================
 local espBtn = Instance.new("TextButton")
 espBtn.Size = UDim2.new(0, 360, 0, 35)
@@ -257,31 +257,61 @@ espBtn.Font = Enum.Font.SourceSansBold
 espBtn.TextSize = 18
 espBtn.Parent = dashboard
 
--- មុខងារកំណត់ពណ៌ និងឈ្មោះ Value តាមសត្វ
 local function getEggValueInfo(rawName)
     local nameLower = rawName:lower()
     if nameLower:match("mythic") then
-        return "Mythic", Color3.fromRGB(255, 50, 255) -- ពណ៌ស្វាយ
+        return "Mythic", Color3.fromRGB(255, 50, 255)
     elseif nameLower:match("legendary") then
-        return "Legendary", Color3.fromRGB(255, 100, 50) -- ពណ៌ទឹកក្រូច
+        return "Legendary", Color3.fromRGB(255, 100, 50)
     elseif nameLower:match("epic") then
-        return "Epic", Color3.fromRGB(200, 50, 255) -- ពណ៌ស្វាយចាស់
+        return "Epic", Color3.fromRGB(200, 50, 255)
     elseif nameLower:match("rare") then
-        return "Rare", Color3.fromRGB(50, 150, 255) -- ពណ៌ខៀវ
+        return "Rare", Color3.fromRGB(50, 150, 255)
     elseif nameLower:match("uncommon") then
-        return "Uncommon", Color3.fromRGB(50, 255, 100) -- ពណ៌បៃតង
+        return "Uncommon", Color3.fromRGB(50, 255, 100)
     else
-        return "Common", Color3.fromRGB(200, 200, 200) -- ពណ៌ប្រផេះ
+        return "Common", Color3.fromRGB(200, 200, 200)
     end
 end
 
--- មុខងារបង្កើតអក្សរលើក្បាលសត្វ (ESP)
 local function createESP(obj)
     if obj:FindFirstChild("EggESP") then return end
+    
     local root = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildOfClass("Part") or obj:FindFirstChildOfClass("MeshPart")
     if not root then return end
 
-    local valueStr, color = getEggValueInfo(obj.Name)
+    local petValue = "Unknown"
+    local valueColor = Color3.fromRGB(200, 200, 200)
+    
+    local function findValue(parent, depth)
+        if depth > 4 then return false end
+        for _, child in pairs(parent:GetChildren()) do
+            if child:IsA("TextLabel") and child.Text:match("%$[%d%.]+[KMBT]?/s") then
+                petValue = child.Text
+                if petValue:match("B/s") or petValue:match("T/s") then
+                    valueColor = Color3.fromRGB(50, 255, 100)
+                elseif petValue:match("M/s") then
+                    valueColor = Color3.fromRGB(50, 150, 255)
+                else
+                    valueColor = Color3.fromRGB(255, 150, 50)
+                end
+                return true
+            end
+            
+            if child:IsA("StringValue") and (child.Name:lower():match("value") or child.Name:lower():match("stats")) then
+                 if child.Value:match("%$[%d%.]+[KMBT]?/s") then
+                    petValue = child.Value
+                    return true
+                 end
+            end
+            if findValue(child, depth + 1) then return true end
+        end
+        return false
+    end
+    
+    if not findValue(obj, 1) then
+       petValue, valueColor = getEggValueInfo(obj.Name)
+    end
 
     local bgui = Instance.new("BillboardGui")
     bgui.Name = "EggESP"
@@ -293,8 +323,8 @@ local function createESP(obj)
     local text = Instance.new("TextLabel")
     text.Size = UDim2.new(1, 0, 1, 0)
     text.BackgroundTransparency = 1
-    text.Text = valueStr
-    text.TextColor3 = color
+    text.Text = petValue
+    text.TextColor3 = valueColor
     text.TextStrokeTransparency = 0 
     text.Font = Enum.Font.GothamBold
     text.TextSize = 14
@@ -320,7 +350,6 @@ espBtn.MouseButton1Click:Connect(function()
                     end
                 end
             end
-            -- លុប ESP ចោលពេលបិទ (OFF)
             for _, obj in pairs(workspace:GetDescendants()) do
                 if obj:IsA("Model") and obj:FindFirstChild("EggESP") then
                     obj.EggESP:Destroy()
@@ -344,7 +373,6 @@ local function addAdminTitle(character)
     local head = character:WaitForChild("Head", 5)
     if not head then return end
     
-    -- លុបចាស់ចេញបើមាន
     if head:FindFirstChild("AdminTitle") then
         head.AdminTitle:Destroy()
     end
