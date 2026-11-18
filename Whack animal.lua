@@ -2,7 +2,7 @@ local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "SP_Roblox_Script_GUI"
 gui.ResetOnSpawn = false
-gui.Parent = game.CoreGui -- ប្រើ CoreGui 
+gui.Parent = game.CoreGui
 
 -- [ប៊ូតុងបើកផ្ទាំង]
 local openButton = Instance.new("TextButton")
@@ -19,8 +19,8 @@ openButton.Parent = gui
 -- [ផ្ទាំង Dashboard]
 local dashboard = Instance.new("Frame")
 dashboard.Name = "Dashboard"
-dashboard.Size = UDim2.new(0, 400, 0, 280)
-dashboard.Position = UDim2.new(0.5, -200, 0.5, -140)
+dashboard.Size = UDim2.new(0, 400, 0, 330) -- បង្កើនទំហំផ្ទាំង
+dashboard.Position = UDim2.new(0.5, -200, 0.5, -165)
 dashboard.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 dashboard.BorderSizePixel = 0
 dashboard.Visible = true 
@@ -28,7 +28,6 @@ dashboard.Active = true
 dashboard.Draggable = true 
 dashboard.Parent = gui
 
--- [ចំណងជើង]
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 40)
 title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
@@ -38,7 +37,6 @@ title.Font = Enum.Font.FredokaOne
 title.TextSize = 22
 title.Parent = dashboard
 
--- [ប៊ូតុងខ្វែងបិទ]
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 40, 0, 40)
 closeButton.Position = UDim2.new(1, -40, 0, 0)
@@ -49,15 +47,17 @@ closeButton.Font = Enum.Font.SourceSansBold
 closeButton.TextSize = 20
 closeButton.Parent = dashboard
 
--- អថេរសម្រាប់កំណត់ ON/OFF
+-- អថេរទាំងអស់
 _G.RunFast = false
 _G.AutoSwing = false
 _G.AntiChase = false
+_G.AutoGrabTP = false
+local savedBaseCFrame = nil -- សម្រាប់រក្សាទុកទីតាំង Forest Zone
 
 -- [1. ប៊ូតុង រត់លឿន]
 local runBtn = Instance.new("TextButton")
-runBtn.Size = UDim2.new(0, 360, 0, 40)
-runBtn.Position = UDim2.new(0, 20, 0, 60)
+runBtn.Size = UDim2.new(0, 360, 0, 35)
+runBtn.Position = UDim2.new(0, 20, 0, 55)
 runBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 runBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 runBtn.Text = "Run Fast: OFF"
@@ -74,13 +74,19 @@ runBtn.MouseButton1Click:Connect(function()
             while _G.RunFast do
                 task.wait(0.5)
                 if player.Character and player.Character:FindFirstChild("Humanoid") then
-                    player.Character.Humanoid.WalkSpeed = 100
+                    -- ប្ដូរលេខទីនេះ ឧទាហរណ៍ ដាក់ 500 ឬ 1000
+                    player.Character.Humanoid.WalkSpeed = 500 
                 end
             end
             if player.Character and player.Character:FindFirstChild("Humanoid") then
-                player.Character.Humanoid.WalkSpeed = 16 -- ត្រលប់មកល្បឿនធម្មតាវិញ
+                player.Character.Humanoid.WalkSpeed = 16 
             end
         end)
+    else
+        runBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        runBtn.Text = "Run Fast: OFF"
+    end
+end)
     else
         runBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         runBtn.Text = "Run Fast: OFF"
@@ -89,8 +95,8 @@ end)
 
 -- [2. ប៊ូតុង វាយស្វ័យប្រវត្តិ]
 local swingBtn = Instance.new("TextButton")
-swingBtn.Size = UDim2.new(0, 360, 0, 40)
-swingBtn.Position = UDim2.new(0, 20, 0, 120)
+swingBtn.Size = UDim2.new(0, 360, 0, 35)
+swingBtn.Position = UDim2.new(0, 20, 0, 100)
 swingBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 swingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 swingBtn.Text = "Auto Swing: OFF"
@@ -107,9 +113,7 @@ swingBtn.MouseButton1Click:Connect(function()
             while _G.AutoSwing do
                 task.wait(0.1)
                 local tool = player.Character and player.Character:FindFirstChildOfClass("Tool")
-                if tool then
-                    tool:Activate()
-                end
+                if tool then tool:Activate() end
             end
         end)
     else
@@ -120,8 +124,8 @@ end)
 
 -- [3. ប៊ូតុង កុំអោយសត្វដេញ]
 local chaseBtn = Instance.new("TextButton")
-chaseBtn.Size = UDim2.new(0, 360, 0, 40)
-chaseBtn.Position = UDim2.new(0, 20, 0, 180)
+chaseBtn.Size = UDim2.new(0, 360, 0, 35)
+chaseBtn.Position = UDim2.new(0, 20, 0, 145)
 chaseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 chaseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 chaseBtn.Text = "Anti Chase: OFF"
@@ -152,11 +156,79 @@ chaseBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ដំណើរការប៊ូតុងបើកបិទ
-openButton.MouseButton1Click:Connect(function()
-    dashboard.Visible = not dashboard.Visible
+-- [4. ប៊ូតុង កំណត់ទីតាំង Forest Zone]
+local setBaseBtn = Instance.new("TextButton")
+setBaseBtn.Size = UDim2.new(0, 360, 0, 35)
+setBaseBtn.Position = UDim2.new(0, 20, 0, 200)
+setBaseBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
+setBaseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+setBaseBtn.Text = "1. Set Forest Zone (Stand here & Click)"
+setBaseBtn.Font = Enum.Font.SourceSansBold
+setBaseBtn.TextSize = 16
+setBaseBtn.Parent = dashboard
+
+setBaseBtn.MouseButton1Click:Connect(function()
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        savedBaseCFrame = player.Character.HumanoidRootPart.CFrame
+        setBaseBtn.Text = "Forest Zone Saved!"
+        setBaseBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        task.wait(1.5)
+        setBaseBtn.Text = "1. Update Forest Zone Location"
+        setBaseBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
+    end
 end)
 
-closeButton.MouseButton1Click:Connect(function()
-    dashboard.Visible = false
+-- [5. ប៊ូតុង Auto Grab & TP]
+local autoFarmBtn = Instance.new("TextButton")
+autoFarmBtn.Size = UDim2.new(0, 360, 0, 40)
+autoFarmBtn.Position = UDim2.new(0, 20, 0, 245)
+autoFarmBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+autoFarmBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoFarmBtn.Text = "2. Auto Grab & TP Forest: OFF"
+autoFarmBtn.Font = Enum.Font.SourceSansBold
+autoFarmBtn.TextSize = 18
+autoFarmBtn.Parent = dashboard
+
+autoFarmBtn.MouseButton1Click:Connect(function()
+    if not savedBaseCFrame then
+        autoFarmBtn.Text = "Please Set Forest Zone First!"
+        task.wait(1.5)
+        autoFarmBtn.Text = "2. Auto Grab & TP Forest: OFF"
+        return
+    end
+
+    _G.AutoGrabTP = not _G.AutoGrabTP
+    if _G.AutoGrabTP then
+        autoFarmBtn.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
+        autoFarmBtn.Text = "2. Auto Grab & TP Forest: ON"
+        spawn(function()
+            while _G.AutoGrabTP do
+                task.wait(0.5)
+                local char = player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    for _, obj in pairs(workspace:GetDescendants()) do
+                        -- រកមើលប៊ូតុង [E] Grab នៅលើសត្វដែលធ្លាក់
+                        if obj:IsA("ProximityPrompt") and (obj.ActionText:lower():match("grab") or obj.ObjectText:lower():match("grab")) then
+                            -- ១. ទេឡេផតទៅក្បែរសត្វ
+                            char.HumanoidRootPart.CFrame = obj.Parent.CFrame
+                            task.wait(0.3)
+                            -- ២. បញ្ជាឲ្យចុច Grab ដោយស្វ័យប្រវត្តិ
+                            fireproximityprompt(obj, 1)
+                            task.wait(0.2)
+                            -- ៣. ទេឡេផតត្រលប់មក Forest Zone វិញភ្លាមៗ
+                            char.HumanoidRootPart.CFrame = savedBaseCFrame
+                            break -- ធ្វើម្តងមួយៗ
+                        end
+                    end
+                end
+            end
+        end)
+    else
+        autoFarmBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        autoFarmBtn.Text = "2. Auto Grab & TP Forest: OFF"
+    end
 end)
+
+-- ដំណើរការប៊ូតុងបើកបិទ
+openButton.MouseButton1Click:Connect(function() dashboard.Visible = not dashboard.Visible end)
+closeButton.MouseButton1Click:Connect(function() dashboard.Visible = false end)
