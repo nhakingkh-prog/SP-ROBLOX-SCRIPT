@@ -257,21 +257,44 @@ espBtn.Font = Enum.Font.SourceSansBold
 espBtn.TextSize = 18
 espBtn.Parent = dashboard
 
-local function getEggValueInfo(rawName)
-    local nameLower = rawName:lower()
-    if nameLower:match("mythic") then
-        return "Mythic", Color3.fromRGB(255, 50, 255)
-    elseif nameLower:match("legendary") then
-        return "Legendary", Color3.fromRGB(255, 100, 50)
-    elseif nameLower:match("epic") then
-        return "Epic", Color3.fromRGB(200, 50, 255)
-    elseif nameLower:match("rare") then
-        return "Rare", Color3.fromRGB(50, 150, 255)
-    elseif nameLower:match("uncommon") then
-        return "Uncommon", Color3.fromRGB(50, 255, 100)
-    else
-        return "Common", Color3.fromRGB(200, 200, 200)
+-- តារាងតម្លៃ និងពណ៌ទាំងអស់ (រួមទាំង Galactic និង Exclusive)
+local rarities = {
+    galactic = {name = "Galactic", color = Color3.fromRGB(0, 255, 255)}, -- ពណ៌ផ្ទៃមេឃ
+    exclusive = {name = "Exclusive", color = Color3.fromRGB(255, 215, 0)}, -- ពណ៌មាស
+    mythic = {name = "Mythic", color = Color3.fromRGB(255, 50, 255)}, 
+    legendary = {name = "Legendary", color = Color3.fromRGB(255, 100, 50)},
+    epic = {name = "Epic", color = Color3.fromRGB(200, 50, 255)},
+    rare = {name = "Rare", color = Color3.fromRGB(50, 150, 255)},
+    uncommon = {name = "Uncommon", color = Color3.fromRGB(50, 255, 100)},
+    common = {name = "Common", color = Color3.fromRGB(200, 200, 200)}
+}
+
+-- មុខងារស្វែងរកកម្រិត (Rarity) ដោយអានអក្សរផ្ទាល់ពីលើក្បាលសត្វ
+local function getEggValueInfo(obj)
+    -- ស្កេនមើលអក្សរ (TextLabel) នៅក្នុងខ្លួនសត្វ
+    for _, child in pairs(obj:GetDescendants()) do
+        if child:IsA("TextLabel") and child.Text ~= "" then
+            local txt = child.Text:lower()
+            for key, data in pairs(rarities) do
+                if txt:match(key) and key ~= "common" then 
+                    return data.name, data.color
+                elseif txt == "common" then
+                    return "Common", rarities.common.color
+                end
+            end
+        end
     end
+    
+    -- ប្រសិនបើគ្មាន TextLabel ទេ ចាំរកក្នុងឈ្មោះរបស់វា (Fallback)
+    local nameLower = obj.Name:lower()
+    for key, data in pairs(rarities) do
+        if nameLower:match(key) then
+            return data.name, data.color
+        end
+    end
+    
+    -- បើមិនមានពាក្យអ្វីសោះ ដាក់ថា Unknown
+    return "Unknown", Color3.fromRGB(200, 200, 200)
 end
 
 local function createESP(obj)
@@ -283,6 +306,7 @@ local function createESP(obj)
     local petValue = "Unknown"
     local valueColor = Color3.fromRGB(200, 200, 200)
     
+    -- មុខងារស្វែងរកតម្លៃជា $/s
     local function findValue(parent, depth)
         if depth > 4 then return false end
         for _, child in pairs(parent:GetChildren()) do
@@ -309,15 +333,16 @@ local function createESP(obj)
         return false
     end
     
+    -- ប្រសិនបើរកតម្លៃ $/s មិនឃើញ ប្រើមុខងារស្វែងរក Rarity (Galactic, Mythic...)
     if not findValue(obj, 1) then
-       petValue, valueColor = getEggValueInfo(obj.Name)
+       petValue, valueColor = getEggValueInfo(obj)
     end
 
     local bgui = Instance.new("BillboardGui")
     bgui.Name = "EggESP"
     bgui.Adornee = root
     bgui.Size = UDim2.new(0, 100, 0, 40)
-    bgui.StudsOffset = Vector3.new(0, 3, 0)
+    bgui.StudsOffset = Vector3.new(0, 3.5, 0) -- លើកឲ្យខ្ពស់បន្តិចកុំឲ្យជាន់អក្សរហ្គេម
     bgui.AlwaysOnTop = true
 
     local text = Instance.new("TextLabel")
@@ -327,7 +352,7 @@ local function createESP(obj)
     text.TextColor3 = valueColor
     text.TextStrokeTransparency = 0 
     text.Font = Enum.Font.GothamBold
-    text.TextSize = 14
+    text.TextSize = 16
     text.Parent = bgui
 
     bgui.Parent = obj
