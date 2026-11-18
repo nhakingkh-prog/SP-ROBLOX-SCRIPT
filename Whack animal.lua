@@ -192,7 +192,7 @@ setBaseBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- [5. ប៊ូតុង Auto Grab & TP]
+-- [5. ប៊ូតុង Auto Grab & TP - កែសម្រួលថ្មី]
 -- ==========================================
 local autoFarmBtn = Instance.new("TextButton")
 autoFarmBtn.Size = UDim2.new(0, 360, 0, 40)
@@ -218,17 +218,25 @@ autoFarmBtn.MouseButton1Click:Connect(function()
         autoFarmBtn.Text = "2. Auto Grab & TP Forest: ON"
         spawn(function()
             while _G.AutoGrabTP do
-                task.wait(0.2) 
+                task.wait(0.1) -- ស្វែងរកឲ្យញាប់ជាងមុន
                 local char = player.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
                     for _, obj in pairs(workspace:GetDescendants()) do
                         if obj:IsA("ProximityPrompt") then
-                            char.HumanoidRootPart.CFrame = obj.Parent.CFrame
-                            task.wait(0.2)
-                            fireproximityprompt(obj, 1)
-                            task.wait(0.2)
-                            char.HumanoidRootPart.CFrame = savedBaseCFrame
-                            break 
+                            local promptParent = obj.Parent
+                            if promptParent and promptParent:IsA("BasePart") then
+                                -- 1. Teleport ទៅចំកណ្តាលសត្វឲ្យប៉ះវាផ្ទាល់
+                                char.HumanoidRootPart.CFrame = promptParent.CFrame
+                                task.wait(0.1)
+                                
+                                -- 2. បញ្ជាឲ្យ Fire Proximity (ជាជម្រើសទី ២)
+                                pcall(function() fireproximityprompt(obj, 1) end)
+                                task.wait(0.1)
+                                
+                                -- 3. Teleport ទៅ Base វិញ
+                                char.HumanoidRootPart.CFrame = savedBaseCFrame
+                                break 
+                            end
                         end
                     end
                 end
@@ -245,7 +253,7 @@ openButton.MouseButton1Click:Connect(function() dashboard.Visible = not dashboar
 closeButton.MouseButton1Click:Connect(function() dashboard.Visible = false end)
 
 -- ==========================================
--- [បន្ថែមថ្មី: ផ្ទាំងបង្ហាញតម្លៃសត្វ (Info Panel)]
+-- [ផ្ទាំងបង្ហាញតម្លៃសត្វ (Info Panel)]
 -- ==========================================
 local infoPanel = Instance.new("Frame")
 infoPanel.Name = "InfoPanel"
@@ -290,6 +298,9 @@ targetHealth.Parent = infoPanel
 
 -- មុខងារបំប្លែងលេខទៅជា K, M, B, T
 local function formatNumber(n)
+    if type(n) ~= "number" then
+        n = tonumber(string.match(n, "%d+%.?%d*")) or 0
+    end
     if n >= 1e12 then
         return string.format("%.2fT", n / 1e12)
     elseif n >= 1e9 then
@@ -303,25 +314,39 @@ local function formatNumber(n)
     end
 end
 
--- មុខងារស្វែងរកឈាមរបស់សត្វ (Egg) ករណីគ្មាន Humanoid
+-- មុខងារស្វែងរកឈាមកម្រិតជ្រៅ (Deep Search) សម្រាប់ Custom Egg
 local function getCustomHealth(obj)
-    -- រកមើល Value
-    for _, child in pairs(obj:GetDescendants()) do
-        if child:IsA("NumberValue") or child:IsA("IntValue") then
-            if child.Name:lower() == "health" or child.Name:lower() == "hp" or child.Name:lower() == "maxhealth" then
-                return formatNumber(child.Value)
+    local maxDepth = 4 -- ស្កេនចូលក្នុង Object ត្រឹម ៤ ជាន់
+    local foundHealth = nil
+
+    local function scan(parent, depth)
+        if depth > maxDepth then return end
+        for _, child in pairs(parent:GetChildren()) do
+            -- រកមើល Value
+            if child:IsA("NumberValue") or child:IsA("IntValue") then
+                if child.Name:lower():match("health") or child.Name:lower():match("hp") then
+                    foundHealth = formatNumber(child.Value)
+                    return
+                end
             end
+            -- រកមើល TextLabel ដែលមានអក្សរ HP ឫសញ្ញា /
+            if child:IsA("TextLabel") and child.Visible then
+                if child.Text:match("%d+.*%s*/%s*%d+") or child.Text:lower():match("hp") then
+                    foundHealth = child.Text
+                    return
+                end
+            end
+            -- រកមើល StringValue
+            if child:IsA("StringValue") and (child.Name:lower():match("health") or child.Name:lower():match("hp")) then
+                 foundHealth = child.Value
+                 return
+            end
+            scan(child, depth + 1)
         end
     end
-    -- រកមើលអក្សរ (TextLabel) របស់ហ្គេមផ្ទាល់
-    for _, child in pairs(obj:GetDescendants()) do
-        if child:IsA("TextLabel") and child.Visible then
-            if string.match(child.Text, "%d.*%s*/%s*%d") or string.match(child.Text:lower(), "hp") then
-                return child.Text -- បង្ហាញដូចអក្សរក្នុងហ្គេមផ្ទាល់តែម្តង
-            end
-        end
-    end
-    return "Unknown"
+
+    scan(obj, 1)
+    return foundHealth or "Hidden"
 end
 
 -- មុខងារ Scan រកសត្វដែលនៅជិតជាងគេ
@@ -359,7 +384,7 @@ spawn(function()
                     if hum then
                         targetHealth.Text = "Health: " .. formatNumber(hum.Health) .. " / " .. formatNumber(hum.MaxHealth)
                     else
-                        -- ប្រើមុខងារស្វែងរកឈាមថ្មី
+                        -- ប្រើមុខងារស្វែងរកកម្រិតជ្រៅ
                         targetHealth.Text = "Health: " .. getCustomHealth(closestObj)
                     end
                 else
@@ -374,7 +399,7 @@ spawn(function()
 end)
 
 -- ==========================================
--- [បន្ថែមថ្មី: មុខងារបង្ហាញឈ្មោះ ADMIN និងសញ្ញាគ្រីស លើក្បាល]
+-- [មុខងារបង្ហាញឈ្មោះ ADMIN និងសញ្ញាគ្រីស លើក្បាល]
 -- ==========================================
 local function addAdminTitle(character)
     local head = character:WaitForChild("Head", 5)
@@ -392,7 +417,6 @@ local function addAdminTitle(character)
     bgui.StudsOffset = Vector3.new(0, 2.5, 0)
     bgui.AlwaysOnTop = true
 
-    -- ប្រអប់សម្រាប់ផ្ទុកទាំងអក្សរ និងរូបភាព
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 1, 0)
     frame.BackgroundTransparency = 1
@@ -405,7 +429,7 @@ local function addAdminTitle(character)
     layout.Padding = UDim.new(0, 8) 
     layout.Parent = frame
 
-    -- រូបភាពសញ្ញាគ្រីស (Verified Tick) - ប្រើ ID ថ្មីដែលដំណើរការច្បាស់លាស់
+    -- រូបភាពសញ្ញាគ្រីស (Verified Tick)
     local icon = Instance.new("ImageLabel")
     icon.Size = UDim2.new(0, 28, 0, 28)
     icon.BackgroundTransparency = 1
@@ -414,7 +438,7 @@ local function addAdminTitle(character)
 
     -- អក្សរឈ្មោះ
     local text = Instance.new("TextLabel")
-    text.AutomaticSize = Enum.AutomaticSize.X -- ធ្វើឲ្យវាលាតសន្ធឹងតាមតួអក្សរ មិនទៅបិទរូបទេ
+    text.AutomaticSize = Enum.AutomaticSize.X 
     text.Size = UDim2.new(0, 0, 1, 0)
     text.BackgroundTransparency = 1
     text.Text = "[ADMIN] " .. player.Name
@@ -427,7 +451,6 @@ local function addAdminTitle(character)
     bgui.Parent = head
 end
 
--- ដាក់លើក្បាលភ្លាមៗពេល Execute និងដាក់ម្ដងទៀតរាល់ពេលកើតមកវិញ
 if player.Character then
     addAdminTitle(player.Character)
 end
