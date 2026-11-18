@@ -2,7 +2,14 @@ local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "SP_Roblox_Script_GUI"
 gui.ResetOnSpawn = false
-gui.Parent = game.CoreGui
+
+-- ធ្វើឲ្យ Support ជាមួយគ្រប់កម្មវិធី Executors ទាំងអស់
+local success, error = pcall(function()
+    gui.Parent = (gethui and gethui()) or game.CoreGui
+end)
+if not success then
+    gui.Parent = player:WaitForChild("PlayerGui")
+end
 
 -- [ប៊ូតុងបើកផ្ទាំង]
 local openButton = Instance.new("TextButton")
@@ -85,7 +92,7 @@ runBtn.MouseButton1Click:Connect(function()
         runBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         runBtn.Text = "Run Fast: OFF"
     end
-end) -- បានលុបកូដដែលជាន់គ្នាពីត្រង់នេះចុះក្រោម
+end)
 
 -- [2. ប៊ូតុង វាយស្វ័យប្រវត្តិ]
 local swingBtn = Instance.new("TextButton")
