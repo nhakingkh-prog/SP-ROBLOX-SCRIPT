@@ -204,13 +204,14 @@ autoFarmBtn.MouseButton1Click:Connect(function()
         autoFarmBtn.Text = "2. Auto Grab & TP Forest: ON"
         spawn(function()
             while _G.AutoGrabTP do
-                task.wait(0.5)
+                task.wait(0.2) -- ឲ្យវាលឿនជាងមុន ដើម្បីចាប់បានភ្លាមៗពេលធ្លាក់
                 local char = player.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
                     for _, obj in pairs(workspace:GetDescendants()) do
-                        if obj:IsA("ProximityPrompt") and (obj.ActionText:lower():match("grab") or obj.ObjectText:lower():match("grab")) then
+                        -- ប្ដូរលក្ខខណ្ឌ៖ ឲ្យតែវាជាប៊ូតុងចុច [E] គឺវាចុចទាំងអស់ មិនបាច់រើសពាក្យ Grab ទេ
+                        if obj:IsA("ProximityPrompt") then
                             char.HumanoidRootPart.CFrame = obj.Parent.CFrame
-                            task.wait(0.3)
+                            task.wait(0.2)
                             fireproximityprompt(obj, 1)
                             task.wait(0.2)
                             char.HumanoidRootPart.CFrame = savedBaseCFrame
