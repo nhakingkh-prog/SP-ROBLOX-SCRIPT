@@ -303,7 +303,7 @@ local function formatNumber(n)
     end
 end
 
--- មុខងារ Scan រកសត្វដែលនៅជិតជាងគេ 
+-- មុខងារ Scan រកសត្វដែលនៅជិតជាងគេ (មិនចាប់យកមនុស្ស)
 spawn(function()
     while task.wait(0.5) do
         if dashboard.Visible then
@@ -314,7 +314,7 @@ spawn(function()
                 local shortestDist = 60 
 
                 for _, obj in pairs(workspace:GetDescendants()) do
-                    if obj:IsA("Model") and obj ~= char then
+                    if obj:IsA("Model") and obj ~= char and not game.Players:GetPlayerFromCharacter(obj) then
                         local hum = obj:FindFirstChildOfClass("Humanoid")
                         local root = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart
                         
@@ -331,7 +331,6 @@ spawn(function()
                 if closestObj then
                     local hum = closestObj:FindFirstChildOfClass("Humanoid")
                     targetName.Text = "Target: " .. closestObj.Name
-                    -- ប្រើប្រាស់មុខងារបំប្លែងលេខនៅទីនេះ
                     targetHealth.Text = "Health: " .. formatNumber(hum.Health) .. " / " .. formatNumber(hum.MaxHealth)
                 else
                     targetName.Text = "Target: None"
@@ -343,3 +342,41 @@ spawn(function()
         end
     end
 end)
+
+-- ==========================================
+-- [បន្ថែមថ្មី: មុខងារបង្ហាញឈ្មោះ ADMIN លើក្បាល]
+-- ==========================================
+local function addAdminTitle(character)
+    local head = character:WaitForChild("Head", 5)
+    if not head then return end
+    
+    -- លុបចាស់ចេញបើមាន
+    if head:FindFirstChild("AdminTitle") then
+        head.AdminTitle:Destroy()
+    end
+
+    local bgui = Instance.new("BillboardGui")
+    bgui.Name = "AdminTitle"
+    bgui.Adornee = head
+    bgui.Size = UDim2.new(0, 200, 0, 50)
+    bgui.StudsOffset = Vector3.new(0, 2.5, 0)
+    bgui.AlwaysOnTop = true
+
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "[ADMIN] " .. player.Name
+    text.TextColor3 = Color3.fromRGB(255, 50, 50)
+    text.TextStrokeTransparency = 0
+    text.Font = Enum.Font.GothamBlack
+    text.TextSize = 25
+    text.Parent = bgui
+
+    bgui.Parent = head
+end
+
+-- ដាក់លើក្បាលភ្លាមៗពេល Execute និងដាក់ម្ដងទៀតរាល់ពេលកើតមកវិញ
+if player.Character then
+    addAdminTitle(player.Character)
+end
+player.CharacterAdded:Connect(addAdminTitle)
