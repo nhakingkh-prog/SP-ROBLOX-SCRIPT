@@ -112,7 +112,7 @@ swingBtn.MouseButton1Click:Connect(function()
         swingBtn.Text = "Auto Swing: ON"
         spawn(function()
             while _G.AutoSwing do
-                task.wait(0.01) -- វាយលឿនបំផុត (0.01)
+                task.wait(0.01) 
                 local tool = player.Character and player.Character:FindFirstChildOfClass("Tool")
                 if tool then tool:Activate() end
             end
@@ -226,6 +226,87 @@ autoFarmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ដំណើរការប៊ូតុងបើកបិទ
+-- ដំណើរការប៊ូតុងបើកបិទ Dashboard
 openButton.MouseButton1Click:Connect(function() dashboard.Visible = not dashboard.Visible end)
 closeButton.MouseButton1Click:Connect(function() dashboard.Visible = false end)
+
+-- ==========================================
+-- [បន្ថែមថ្មី: ផ្ទាំងបង្ហាញតម្លៃសត្វ (Info Panel)]
+-- ==========================================
+local infoPanel = Instance.new("Frame")
+infoPanel.Name = "InfoPanel"
+infoPanel.Size = UDim2.new(0, 200, 0, 80)
+infoPanel.Position = UDim2.new(0.5, 210, 0.5, -165) 
+infoPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+infoPanel.BorderSizePixel = 2
+infoPanel.BorderColor3 = Color3.fromRGB(50, 150, 255)
+infoPanel.Visible = true -- បង្ហាញព្រមជាមួយ Dashboard
+infoPanel.Active = true
+infoPanel.Draggable = true 
+infoPanel.Parent = gui
+
+local infoTitle = Instance.new("TextLabel")
+infoTitle.Size = UDim2.new(1, 0, 0, 25)
+infoTitle.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
+infoTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+infoTitle.Text = "Target Info"
+infoTitle.Font = Enum.Font.SourceSansBold
+infoTitle.TextSize = 16
+infoTitle.Parent = infoPanel
+
+local targetName = Instance.new("TextLabel")
+targetName.Size = UDim2.new(1, 0, 0, 25)
+targetName.Position = UDim2.new(0, 0, 0, 25)
+targetName.BackgroundTransparency = 1
+targetName.TextColor3 = Color3.fromRGB(255, 255, 100)
+targetName.Text = "Name: None"
+targetName.Font = Enum.Font.SourceSans
+targetName.TextSize = 16
+targetName.Parent = infoPanel
+
+local targetHealth = Instance.new("TextLabel")
+targetHealth.Size = UDim2.new(1, 0, 0, 25)
+targetHealth.Position = UDim2.new(0, 0, 0, 50)
+targetHealth.BackgroundTransparency = 1
+targetHealth.TextColor3 = Color3.fromRGB(50, 255, 50)
+targetHealth.Text = "Health: 0"
+targetHealth.Font = Enum.Font.SourceSans
+targetHealth.TextSize = 16
+targetHealth.Parent = infoPanel
+
+-- មុខងារ Scan រកសត្វដែលនៅជិតជាងគេ
+spawn(function()
+    while task.wait(0.5) do
+        if dashboard.Visible then
+            infoPanel.Visible = true
+            local char = player.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local closestObj = nil
+                local shortestDist = 20 
+
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and (obj.Name:lower():match("egg") or obj.Name:lower():match("boss") or obj.Name:lower():match("dragon") or obj.Name:lower():match("cow")) then
+                        local root = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart
+                        if root then
+                            local dist = (char.HumanoidRootPart.Position - root.Position).Magnitude
+                            if dist < shortestDist then
+                                shortestDist = dist
+                                closestObj = obj
+                            end
+                        end
+                    end
+                end
+
+                if closestObj and closestObj:FindFirstChild("Humanoid") then
+                    targetName.Text = "Target: " .. closestObj.Name
+                    targetHealth.Text = "Health: " .. tostring(math.floor(closestObj.Humanoid.Health)) .. " / " .. tostring(math.floor(closestObj.Humanoid.MaxHealth))
+                else
+                    targetName.Text = "Target: None"
+                    targetHealth.Text = "Health: 0"
+                end
+            end
+        else
+            infoPanel.Visible = false
+        end
+    end
+end)
