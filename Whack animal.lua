@@ -11,7 +11,9 @@ if not success then
     gui.Parent = player:WaitForChild("PlayerGui")
 end
 
+-- ==========================================
 -- [ប៊ូតុងបើកផ្ទាំង]
+-- ==========================================
 local openButton = Instance.new("TextButton")
 openButton.Name = "OpenButton"
 openButton.Size = UDim2.new(0, 100, 0, 40)
@@ -23,7 +25,9 @@ openButton.Font = Enum.Font.SourceSansBold
 openButton.TextSize = 18
 openButton.Parent = gui
 
--- [ផ្ទាំង Dashboard]
+-- ==========================================
+-- [ផ្ទាំង Dashboard គោល]
+-- ==========================================
 local dashboard = Instance.new("Frame")
 dashboard.Name = "Dashboard"
 dashboard.Size = UDim2.new(0, 400, 0, 330)
@@ -61,7 +65,9 @@ _G.AntiChase = false
 _G.AutoGrabTP = false
 local savedBaseCFrame = nil 
 
+-- ==========================================
 -- [1. ប៊ូតុង រត់លឿន]
+-- ==========================================
 local runBtn = Instance.new("TextButton")
 runBtn.Size = UDim2.new(0, 360, 0, 35)
 runBtn.Position = UDim2.new(0, 20, 0, 55)
@@ -94,7 +100,9 @@ runBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==========================================
 -- [2. ប៊ូតុង វាយស្វ័យប្រវត្តិ]
+-- ==========================================
 local swingBtn = Instance.new("TextButton")
 swingBtn.Size = UDim2.new(0, 360, 0, 35)
 swingBtn.Position = UDim2.new(0, 20, 0, 100)
@@ -123,7 +131,9 @@ swingBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==========================================
 -- [3. ប៊ូតុង កុំអោយសត្វដេញ]
+-- ==========================================
 local chaseBtn = Instance.new("TextButton")
 chaseBtn.Size = UDim2.new(0, 360, 0, 35)
 chaseBtn.Position = UDim2.new(0, 20, 0, 145)
@@ -157,7 +167,9 @@ chaseBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==========================================
 -- [4. ប៊ូតុង កំណត់ទីតាំង Forest Zone]
+-- ==========================================
 local setBaseBtn = Instance.new("TextButton")
 setBaseBtn.Size = UDim2.new(0, 360, 0, 35)
 setBaseBtn.Position = UDim2.new(0, 20, 0, 200)
@@ -179,7 +191,9 @@ setBaseBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==========================================
 -- [5. ប៊ូតុង Auto Grab & TP]
+-- ==========================================
 local autoFarmBtn = Instance.new("TextButton")
 autoFarmBtn.Size = UDim2.new(0, 360, 0, 40)
 autoFarmBtn.Position = UDim2.new(0, 20, 0, 245)
@@ -240,7 +254,7 @@ infoPanel.Position = UDim2.new(0.5, 210, 0.5, -165)
 infoPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 infoPanel.BorderSizePixel = 2
 infoPanel.BorderColor3 = Color3.fromRGB(50, 150, 255)
-infoPanel.Visible = true -- បង្ហាញព្រមជាមួយ Dashboard
+infoPanel.Visible = true 
 infoPanel.Active = true
 infoPanel.Draggable = true 
 infoPanel.Parent = gui
@@ -274,7 +288,7 @@ targetHealth.Font = Enum.Font.SourceSans
 targetHealth.TextSize = 16
 targetHealth.Parent = infoPanel
 
--- មុខងារ Scan រកសត្វដែលនៅជិតជាងគេ
+-- មុខងារ Scan រកសត្វដែលនៅជិតជាងគេ (បានកែសម្រួលថ្មី)
 spawn(function()
     while task.wait(0.5) do
         if dashboard.Visible then
@@ -282,12 +296,15 @@ spawn(function()
             local char = player.Character
             if char and char:FindFirstChild("HumanoidRootPart") then
                 local closestObj = nil
-                local shortestDist = 20 
+                local shortestDist = 60 -- បង្កើនចម្ងាយឲ្យឆ្ងាយជាងមុន
 
                 for _, obj in pairs(workspace:GetDescendants()) do
-                    if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and (obj.Name:lower():match("egg") or obj.Name:lower():match("boss") or obj.Name:lower():match("dragon") or obj.Name:lower():match("cow")) then
+                    -- រកមើលគ្រប់ Model ទាំងអស់ដែលមាន Humanoid ក្រៅពីខ្លួនយើង
+                    if obj:IsA("Model") and obj ~= char then
+                        local hum = obj:FindFirstChildOfClass("Humanoid")
                         local root = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart
-                        if root then
+                        
+                        if hum and root and hum.Health > 0 then
                             local dist = (char.HumanoidRootPart.Position - root.Position).Magnitude
                             if dist < shortestDist then
                                 shortestDist = dist
@@ -297,9 +314,10 @@ spawn(function()
                     end
                 end
 
-                if closestObj and closestObj:FindFirstChild("Humanoid") then
+                if closestObj then
+                    local hum = closestObj:FindFirstChildOfClass("Humanoid")
                     targetName.Text = "Target: " .. closestObj.Name
-                    targetHealth.Text = "Health: " .. tostring(math.floor(closestObj.Humanoid.Health)) .. " / " .. tostring(math.floor(closestObj.Humanoid.MaxHealth))
+                    targetHealth.Text = "Health: " .. tostring(math.floor(hum.Health)) .. " / " .. tostring(math.floor(hum.MaxHealth))
                 else
                     targetName.Text = "Target: None"
                     targetHealth.Text = "Health: 0"
