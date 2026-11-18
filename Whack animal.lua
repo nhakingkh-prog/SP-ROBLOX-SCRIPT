@@ -303,6 +303,27 @@ local function formatNumber(n)
     end
 end
 
+-- មុខងារស្វែងរកឈាមរបស់សត្វ (Egg) ករណីគ្មាន Humanoid
+local function getCustomHealth(obj)
+    -- រកមើល Value
+    for _, child in pairs(obj:GetDescendants()) do
+        if child:IsA("NumberValue") or child:IsA("IntValue") then
+            if child.Name:lower() == "health" or child.Name:lower() == "hp" or child.Name:lower() == "maxhealth" then
+                return formatNumber(child.Value)
+            end
+        end
+    end
+    -- រកមើលអក្សរ (TextLabel) របស់ហ្គេមផ្ទាល់
+    for _, child in pairs(obj:GetDescendants()) do
+        if child:IsA("TextLabel") and child.Visible then
+            if string.match(child.Text, "%d.*%s*/%s*%d") or string.match(child.Text:lower(), "hp") then
+                return child.Text -- បង្ហាញដូចអក្សរក្នុងហ្គេមផ្ទាល់តែម្តង
+            end
+        end
+    end
+    return "Unknown"
+end
+
 -- មុខងារ Scan រកសត្វដែលនៅជិតជាងគេ
 spawn(function()
     while task.wait(0.5) do
@@ -334,12 +355,12 @@ spawn(function()
 
                 if closestObj then
                     targetName.Text = "Target: " .. closestObj.Name
-                    
                     local hum = closestObj:FindFirstChildOfClass("Humanoid")
                     if hum then
                         targetHealth.Text = "Health: " .. formatNumber(hum.Health) .. " / " .. formatNumber(hum.MaxHealth)
                     else
-                        targetHealth.Text = "Health: [Custom Egg]"
+                        -- ប្រើមុខងារស្វែងរកឈាមថ្មី
+                        targetHealth.Text = "Health: " .. getCustomHealth(closestObj)
                     end
                 else
                     targetName.Text = "Target: None"
@@ -367,7 +388,7 @@ local function addAdminTitle(character)
     local bgui = Instance.new("BillboardGui")
     bgui.Name = "AdminTitle"
     bgui.Adornee = head
-    bgui.Size = UDim2.new(0, 300, 0, 50) -- បង្កើនទំហំប្រអប់ដើម្បីដាក់រូប
+    bgui.Size = UDim2.new(0, 300, 0, 50)
     bgui.StudsOffset = Vector3.new(0, 2.5, 0)
     bgui.AlwaysOnTop = true
 
@@ -377,25 +398,24 @@ local function addAdminTitle(character)
     frame.BackgroundTransparency = 1
     frame.Parent = bgui
     
-    -- UIListLayout ដើម្បីតម្រៀបរូបសញ្ញាគ្រីស និងអក្សរឲ្យនៅជួរតែមួយ (ពីឆ្វេងទៅស្តាំ)
     local layout = Instance.new("UIListLayout")
     layout.FillDirection = Enum.FillDirection.Horizontal
     layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     layout.VerticalAlignment = Enum.VerticalAlignment.Center
-    layout.Padding = UDim.new(0, 5) -- គម្លាតរវាងរូបនិងអក្សរ
+    layout.Padding = UDim.new(0, 8) 
     layout.Parent = frame
 
-    -- រូបភាពសញ្ញាគ្រីស (Verified Tick)
+    -- រូបភាពសញ្ញាគ្រីស (Verified Tick) - ប្រើ ID ថ្មីដែលដំណើរការច្បាស់លាស់
     local icon = Instance.new("ImageLabel")
-    icon.Size = UDim2.new(0, 25, 0, 25) -- ទំហំរូប 25x25
+    icon.Size = UDim2.new(0, 28, 0, 28)
     icon.BackgroundTransparency = 1
-    -- ប្រើ Decal ID របស់សញ្ញាគ្រីស Verified ពណ៌ខៀវក្នុង Roblox
-    icon.Image = "rbxassetid://10493035316" 
+    icon.Image = "rbxassetid://7300408655" 
     icon.Parent = frame
 
     -- អក្សរឈ្មោះ
     local text = Instance.new("TextLabel")
-    text.Size = UDim2.new(0, 200, 1, 0)
+    text.AutomaticSize = Enum.AutomaticSize.X -- ធ្វើឲ្យវាលាតសន្ធឹងតាមតួអក្សរ មិនទៅបិទរូបទេ
+    text.Size = UDim2.new(0, 0, 1, 0)
     text.BackgroundTransparency = 1
     text.Text = "[ADMIN] " .. player.Name
     text.TextColor3 = Color3.fromRGB(255, 50, 50)
