@@ -30,8 +30,8 @@ openButton.Parent = gui
 -- ==========================================
 local dashboard = Instance.new("Frame")
 dashboard.Name = "Dashboard"
-dashboard.Size = UDim2.new(0, 400, 0, 330)
-dashboard.Position = UDim2.new(0.5, -200, 0.5, -165)
+dashboard.Size = UDim2.new(0, 400, 0, 380) -- បង្កើនកម្ពស់ដើម្បីដាក់ប៊ូតុង ESP
+dashboard.Position = UDim2.new(0.5, -200, 0.5, -190)
 dashboard.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 dashboard.BorderSizePixel = 0
 dashboard.Visible = true 
@@ -63,6 +63,7 @@ _G.RunFast = false
 _G.AutoSwing = false
 _G.AntiChase = false
 _G.AutoGrabTP = false
+_G.ESPEggs = false -- អថេរសម្រាប់ ESP
 local savedBaseCFrame = nil 
 
 -- ==========================================
@@ -192,7 +193,7 @@ setBaseBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- [5. ប៊ូតុង Auto Grab & TP - កែសម្រួលថ្មី]
+-- [5. ប៊ូតុង Auto Grab & TP]
 -- ==========================================
 local autoFarmBtn = Instance.new("TextButton")
 autoFarmBtn.Size = UDim2.new(0, 360, 0, 40)
@@ -218,22 +219,17 @@ autoFarmBtn.MouseButton1Click:Connect(function()
         autoFarmBtn.Text = "2. Auto Grab & TP Forest: ON"
         spawn(function()
             while _G.AutoGrabTP do
-                task.wait(0.1) -- ស្វែងរកឲ្យញាប់ជាងមុន
+                task.wait(0.1) 
                 local char = player.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
                     for _, obj in pairs(workspace:GetDescendants()) do
                         if obj:IsA("ProximityPrompt") then
                             local promptParent = obj.Parent
                             if promptParent and promptParent:IsA("BasePart") then
-                                -- 1. Teleport ទៅចំកណ្តាលសត្វឲ្យប៉ះវាផ្ទាល់
                                 char.HumanoidRootPart.CFrame = promptParent.CFrame
                                 task.wait(0.1)
-                                
-                                -- 2. បញ្ជាឲ្យ Fire Proximity (ជាជម្រើសទី ២)
                                 pcall(function() fireproximityprompt(obj, 1) end)
                                 task.wait(0.1)
-                                
-                                -- 3. Teleport ទៅ Base វិញ
                                 char.HumanoidRootPart.CFrame = savedBaseCFrame
                                 break 
                             end
@@ -248,155 +244,98 @@ autoFarmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ដំណើរការប៊ូតុងបើកបិទ Dashboard
-openButton.MouseButton1Click:Connect(function() dashboard.Visible = not dashboard.Visible end)
-closeButton.MouseButton1Click:Connect(function() dashboard.Visible = false end)
-
 -- ==========================================
--- [ផ្ទាំងបង្ហាញតម្លៃសត្វ (Info Panel)]
+-- [6. ប៊ូតុងថ្មី: ESP Eggs (បង្ហាញតម្លៃពងទា)]
 -- ==========================================
-local infoPanel = Instance.new("Frame")
-infoPanel.Name = "InfoPanel"
-infoPanel.Size = UDim2.new(0, 200, 0, 80)
-infoPanel.Position = UDim2.new(0.5, 210, 0.5, -165) 
-infoPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-infoPanel.BorderSizePixel = 2
-infoPanel.BorderColor3 = Color3.fromRGB(50, 150, 255)
-infoPanel.Visible = true 
-infoPanel.Active = true
-infoPanel.Draggable = true 
-infoPanel.Parent = gui
+local espBtn = Instance.new("TextButton")
+espBtn.Size = UDim2.new(0, 360, 0, 35)
+espBtn.Position = UDim2.new(0, 20, 0, 295)
+espBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+espBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+espBtn.Text = "ESP Eggs (Show Value): OFF"
+espBtn.Font = Enum.Font.SourceSansBold
+espBtn.TextSize = 18
+espBtn.Parent = dashboard
 
-local infoTitle = Instance.new("TextLabel")
-infoTitle.Size = UDim2.new(1, 0, 0, 25)
-infoTitle.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
-infoTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-infoTitle.Text = "Target Info"
-infoTitle.Font = Enum.Font.SourceSansBold
-infoTitle.TextSize = 16
-infoTitle.Parent = infoPanel
-
-local targetName = Instance.new("TextLabel")
-targetName.Size = UDim2.new(1, 0, 0, 25)
-targetName.Position = UDim2.new(0, 0, 0, 25)
-targetName.BackgroundTransparency = 1
-targetName.TextColor3 = Color3.fromRGB(255, 255, 100)
-targetName.Text = "Name: None"
-targetName.Font = Enum.Font.SourceSans
-targetName.TextSize = 16
-targetName.Parent = infoPanel
-
-local targetHealth = Instance.new("TextLabel")
-targetHealth.Size = UDim2.new(1, 0, 0, 25)
-targetHealth.Position = UDim2.new(0, 0, 0, 50)
-targetHealth.BackgroundTransparency = 1
-targetHealth.TextColor3 = Color3.fromRGB(50, 255, 50)
-targetHealth.Text = "Health: 0"
-targetHealth.Font = Enum.Font.SourceSans
-targetHealth.TextSize = 16
-targetHealth.Parent = infoPanel
-
--- មុខងារបំប្លែងលេខទៅជា K, M, B, T
-local function formatNumber(n)
-    if type(n) ~= "number" then
-        n = tonumber(string.match(n, "%d+%.?%d*")) or 0
-    end
-    if n >= 1e12 then
-        return string.format("%.2fT", n / 1e12)
-    elseif n >= 1e9 then
-        return string.format("%.2fB", n / 1e9)
-    elseif n >= 1e6 then
-        return string.format("%.2fM", n / 1e6)
-    elseif n >= 1e3 then
-        return string.format("%.2fK", n / 1e3)
+-- មុខងារកំណត់ពណ៌ និងឈ្មោះ Value តាមសត្វ
+local function getEggValueInfo(rawName)
+    local nameLower = rawName:lower()
+    if nameLower:match("mythic") then
+        return "Mythic", Color3.fromRGB(255, 50, 255) -- ពណ៌ស្វាយ
+    elseif nameLower:match("legendary") then
+        return "Legendary", Color3.fromRGB(255, 100, 50) -- ពណ៌ទឹកក្រូច
+    elseif nameLower:match("epic") then
+        return "Epic", Color3.fromRGB(200, 50, 255) -- ពណ៌ស្វាយចាស់
+    elseif nameLower:match("rare") then
+        return "Rare", Color3.fromRGB(50, 150, 255) -- ពណ៌ខៀវ
+    elseif nameLower:match("uncommon") then
+        return "Uncommon", Color3.fromRGB(50, 255, 100) -- ពណ៌បៃតង
     else
-        return tostring(math.floor(n))
+        return "Common", Color3.fromRGB(200, 200, 200) -- ពណ៌ប្រផេះ
     end
 end
 
--- មុខងារស្វែងរកឈាមកម្រិតជ្រៅ (Deep Search) សម្រាប់ Custom Egg
-local function getCustomHealth(obj)
-    local maxDepth = 4 -- ស្កេនចូលក្នុង Object ត្រឹម ៤ ជាន់
-    local foundHealth = nil
+-- មុខងារបង្កើតអក្សរលើក្បាលសត្វ (ESP)
+local function createESP(obj)
+    if obj:FindFirstChild("EggESP") then return end
+    local root = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildOfClass("Part") or obj:FindFirstChildOfClass("MeshPart")
+    if not root then return end
 
-    local function scan(parent, depth)
-        if depth > maxDepth then return end
-        for _, child in pairs(parent:GetChildren()) do
-            -- រកមើល Value
-            if child:IsA("NumberValue") or child:IsA("IntValue") then
-                if child.Name:lower():match("health") or child.Name:lower():match("hp") then
-                    foundHealth = formatNumber(child.Value)
-                    return
-                end
-            end
-            -- រកមើល TextLabel ដែលមានអក្សរ HP ឫសញ្ញា /
-            if child:IsA("TextLabel") and child.Visible then
-                if child.Text:match("%d+.*%s*/%s*%d+") or child.Text:lower():match("hp") then
-                    foundHealth = child.Text
-                    return
-                end
-            end
-            -- រកមើល StringValue
-            if child:IsA("StringValue") and (child.Name:lower():match("health") or child.Name:lower():match("hp")) then
-                 foundHealth = child.Value
-                 return
-            end
-            scan(child, depth + 1)
-        end
-    end
+    local valueStr, color = getEggValueInfo(obj.Name)
 
-    scan(obj, 1)
-    return foundHealth or "Hidden"
+    local bgui = Instance.new("BillboardGui")
+    bgui.Name = "EggESP"
+    bgui.Adornee = root
+    bgui.Size = UDim2.new(0, 100, 0, 40)
+    bgui.StudsOffset = Vector3.new(0, 3, 0)
+    bgui.AlwaysOnTop = true
+
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = valueStr
+    text.TextColor3 = color
+    text.TextStrokeTransparency = 0 
+    text.Font = Enum.Font.GothamBold
+    text.TextSize = 14
+    text.Parent = bgui
+
+    bgui.Parent = obj
 end
 
--- មុខងារ Scan រកសត្វដែលនៅជិតជាងគេ
-spawn(function()
-    while task.wait(0.5) do
-        if dashboard.Visible then
-            infoPanel.Visible = true
-            local char = player.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
-                local closestObj = nil
-                local shortestDist = 60 
-
+espBtn.MouseButton1Click:Connect(function()
+    _G.ESPEggs = not _G.ESPEggs
+    if _G.ESPEggs then
+        espBtn.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
+        espBtn.Text = "ESP Eggs (Show Value): ON"
+        spawn(function()
+            while _G.ESPEggs do
+                task.wait(1)
                 for _, obj in pairs(workspace:GetDescendants()) do
-                    if obj:IsA("Model") and obj ~= char and not game.Players:GetPlayerFromCharacter(obj) then
-                        local hasHumanoid = obj:FindFirstChildOfClass("Humanoid")
-                        local isEggOrBoss = obj.Name:lower():match("egg") or obj.Name:lower():match("boss") or obj.Name:lower():match("dragon")
-
-                        if hasHumanoid or isEggOrBoss then
-                            local root = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildOfClass("Part") or obj:FindFirstChildOfClass("MeshPart")
-                            
-                            if root then
-                                local dist = (char.HumanoidRootPart.Position - root.Position).Magnitude
-                                if dist < shortestDist then
-                                    shortestDist = dist
-                                    closestObj = obj
-                                end
-                            end
+                    if obj:IsA("Model") and obj ~= player.Character and not game.Players:GetPlayerFromCharacter(obj) then
+                        local isTarget = obj.Name:lower():match("egg") or obj.Name:lower():match("boss") or obj.Name:lower():match("dragon") or obj:FindFirstChildOfClass("Humanoid")
+                        if isTarget then
+                            createESP(obj)
                         end
                     end
                 end
-
-                if closestObj then
-                    targetName.Text = "Target: " .. closestObj.Name
-                    local hum = closestObj:FindFirstChildOfClass("Humanoid")
-                    if hum then
-                        targetHealth.Text = "Health: " .. formatNumber(hum.Health) .. " / " .. formatNumber(hum.MaxHealth)
-                    else
-                        -- ប្រើមុខងារស្វែងរកកម្រិតជ្រៅ
-                        targetHealth.Text = "Health: " .. getCustomHealth(closestObj)
-                    end
-                else
-                    targetName.Text = "Target: None"
-                    targetHealth.Text = "Health: 0"
+            end
+            -- លុប ESP ចោលពេលបិទ (OFF)
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj:IsA("Model") and obj:FindFirstChild("EggESP") then
+                    obj.EggESP:Destroy()
                 end
             end
-        else
-            infoPanel.Visible = false
-        end
+        end)
+    else
+        espBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        espBtn.Text = "ESP Eggs (Show Value): OFF"
     end
 end)
+
+-- ដំណើរការប៊ូតុងបើកបិទ Dashboard
+openButton.MouseButton1Click:Connect(function() dashboard.Visible = not dashboard.Visible end)
+closeButton.MouseButton1Click:Connect(function() dashboard.Visible = false end)
 
 -- ==========================================
 -- [មុខងារបង្ហាញឈ្មោះ ADMIN និងសញ្ញាគ្រីស លើក្បាល]
