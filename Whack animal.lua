@@ -19,7 +19,7 @@ openButton.Parent = gui
 -- [ផ្ទាំង Dashboard]
 local dashboard = Instance.new("Frame")
 dashboard.Name = "Dashboard"
-dashboard.Size = UDim2.new(0, 400, 0, 330) -- បង្កើនទំហំផ្ទាំង
+dashboard.Size = UDim2.new(0, 400, 0, 330)
 dashboard.Position = UDim2.new(0.5, -200, 0.5, -165)
 dashboard.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 dashboard.BorderSizePixel = 0
@@ -52,7 +52,7 @@ _G.RunFast = false
 _G.AutoSwing = false
 _G.AntiChase = false
 _G.AutoGrabTP = false
-local savedBaseCFrame = nil -- សម្រាប់រក្សាទុកទីតាំង Forest Zone
+local savedBaseCFrame = nil 
 
 -- [1. ប៊ូតុង រត់លឿន]
 local runBtn = Instance.new("TextButton")
@@ -74,7 +74,6 @@ runBtn.MouseButton1Click:Connect(function()
             while _G.RunFast do
                 task.wait(0.5)
                 if player.Character and player.Character:FindFirstChild("Humanoid") then
-                    -- ប្ដូរលេខទីនេះ ឧទាហរណ៍ ដាក់ 500 ឬ 1000
                     player.Character.Humanoid.WalkSpeed = 500 
                 end
             end
@@ -86,12 +85,7 @@ runBtn.MouseButton1Click:Connect(function()
         runBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         runBtn.Text = "Run Fast: OFF"
     end
-end)
-    else
-        runBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-        runBtn.Text = "Run Fast: OFF"
-    end
-end)
+end) -- បានលុបកូដដែលជាន់គ្នាពីត្រង់នេះចុះក្រោម
 
 -- [2. ប៊ូតុង វាយស្វ័យប្រវត្តិ]
 local swingBtn = Instance.new("TextButton")
@@ -207,17 +201,13 @@ autoFarmBtn.MouseButton1Click:Connect(function()
                 local char = player.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
                     for _, obj in pairs(workspace:GetDescendants()) do
-                        -- រកមើលប៊ូតុង [E] Grab នៅលើសត្វដែលធ្លាក់
                         if obj:IsA("ProximityPrompt") and (obj.ActionText:lower():match("grab") or obj.ObjectText:lower():match("grab")) then
-                            -- ១. ទេឡេផតទៅក្បែរសត្វ
                             char.HumanoidRootPart.CFrame = obj.Parent.CFrame
                             task.wait(0.3)
-                            -- ២. បញ្ជាឲ្យចុច Grab ដោយស្វ័យប្រវត្តិ
                             fireproximityprompt(obj, 1)
                             task.wait(0.2)
-                            -- ៣. ទេឡេផតត្រលប់មក Forest Zone វិញភ្លាមៗ
                             char.HumanoidRootPart.CFrame = savedBaseCFrame
-                            break -- ធ្វើម្តងមួយៗ
+                            break 
                         end
                     end
                 end
